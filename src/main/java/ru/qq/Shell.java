@@ -33,8 +33,16 @@ public class Shell {
                 case "ls":
                     vfs.ls().forEach(System.out::println);
                     break;
+                case "cd":
+                    if (args.length > 0) {
+                        vfs.cd(args[0]);
+                    } else {
+                        System.out.println("cd: missing argument");
+                    }
+                    break;
                 default:
                     System.out.println(command + ": command not found");
+                    break;
             }
         }
     }

@@ -9,6 +9,8 @@ public class Main {
 //            System.exit(1);
 //        }
 
+
+
         String configPath = "C:\\Users\\user\\IdeaProjects\\config_task1\\src\\main\\resources\\application.yaml"; // args[0]
         Configuration configuration = new Configuration(configPath);
 

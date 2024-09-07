@@ -9,38 +9,66 @@ public class VirtualFileSystem {
     private ZipFile zipFile;
     private String currentDir;
     private File tempDir;
+    private String name;
+    private TreeNode tree;
 
     public VirtualFileSystem(String zipPath) throws IOException {
         this.zipFile = new ZipFile(zipPath);
-        this.currentDir = "/";
-        this.tempDir = Files.createTempDirectory("vfs").toFile();
-    }
 
-    public List<String> ls() {
-        Set<String> files = new HashSet<>();
+        String[] parts = zipFile.getName().split("\\\\");
+        name = parts[parts.length - 1].substring(0, parts[parts.length - 1].lastIndexOf('.'));
+
+        this.currentDir = name + "/";
+        this.tempDir = Files.createTempDirectory("vfs").toFile();
+
+        tree = new TreeNode(name, false);
         Enumeration<? extends ZipEntry> entries = zipFile.entries();
 
         while (entries.hasMoreElements()) {
             ZipEntry entry = entries.nextElement();
             String entryName = entry.getName();
 
-            String[] parts = entryName.split("/");
+            System.out.println(entryName);
 
-            files.add(parts[1]);
+            tree.insert(entryName.split("/"), !entry.isDirectory());
+        }
+    }
+
+    public List<String> ls() {
+        List<TreeNode> files = tree.getChildrenByNode(currentDir.split("/"));
+
+        List<String> ans = new ArrayList<>();
+
+        for(TreeNode node: files){
+            if(node.isFile()) ans.add(node.getPart());
+            else ans.add(node.getPart() + "/");
         }
 
-        return new ArrayList<>(files);
+        return ans;
+
     }
 
     public void cd(String newDir) {
-        if (newDir.equals("/")) {
-            currentDir = "/";
-        } else {
-            String potentialDir = currentDir + newDir;
-            if (!potentialDir.endsWith("/")) {
-                potentialDir += "/";
+        if(newDir.equals(".")) return;
+        if(newDir.equals("/")) currentDir = name + "/";
+
+        if(newDir.equals("..")){
+            String[] parts = currentDir.split("/");
+
+            String temp = name + "/";
+
+            if(parts.length == 2){
+                currentDir =temp;
+                return;
             }
-            currentDir = potentialDir;
+
+            for (int i = 0; i < parts.length - 1; i++) {
+                temp = temp + parts[i];
+
+                if(i != parts.length - 2) temp += "/";
+            }
+
+            currentDir = temp;
         }
     }
 
