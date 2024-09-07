@@ -1,8 +1,32 @@
 package ru.qq;
+import java.io.IOException;
+import java.util.Map;
+
 public class Main {
     public static void main(String[] args) {
-        Configuration configuration = new Configuration("application.yaml");
+        if (args.length != 1) {
+            System.out.println("Not correct args");
+            System.exit(1);
+        }
 
-        System.out.println(configuration.getUsername());
+        String configPath = args[0];
+        Configuration configuration = new Configuration(configPath);
+
+        String username = configuration.getUsername();
+        String hostname = configuration.getHostname();
+        String zipPath = configuration.getZipPath();
+
+        if (zipPath.isEmpty()) {
+            System.out.println("Error: zip-path is missing in config.");
+            System.exit(1);
+        }
+
+        try {
+            VirtualFileSystem vfs = new VirtualFileSystem(zipPath);
+            Shell shell = new Shell(vfs, username, hostname);
+            shell.start();
+        } catch (IOException e) {
+            System.out.println("Error initializing virtual file system: " + e.getMessage());
+        }
     }
 }

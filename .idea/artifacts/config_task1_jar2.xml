@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="config_task1:jar2">
+    <output-path>$PROJECT_DIR$/out/artifacts/config_task1_jar2</output-path>
+    <root id="archive" name="config_task1.jar">
+      <element id="module-output" name="config_task1" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/yaml/snakeyaml/1.30/snakeyaml-1.30.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

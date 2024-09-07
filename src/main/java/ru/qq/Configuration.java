@@ -2,23 +2,24 @@ package ru.qq;
 
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Map;
 
 public class Configuration {
 
-    private static String USERNAME;
+    private static String USERNAME = "username";
 
-    private static String HOSTNAME;
+    private static String HOSTNAME = "hostname";
 
     private static String ZIPPATH;
 
     public Configuration(String configPath) {
         Yaml yaml = new Yaml();
-        try (InputStream in = (Configuration.class).getClassLoader().getResourceAsStream(configPath)) {
+        try (InputStream in = new FileInputStream(configPath)) { // Используем FileInputStream
             insertValues(yaml.load(in));
         } catch (Exception e) {
-            throw new RuntimeException("Error loading config file: " + e.getMessage());
+            throw new RuntimeException("Error loading config file: " + e.getMessage(), e);
         }
     }
 
