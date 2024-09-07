@@ -8,11 +8,6 @@ public class TreeNode {
     private boolean isFile;
     List<TreeNode> children;
 
-    public TreeNode(String part) {
-        this.part = part;
-        children = new ArrayList<>();
-    }
-
     public TreeNode(String part, boolean isFile) {
         this.part = part;
         this.isFile = isFile;

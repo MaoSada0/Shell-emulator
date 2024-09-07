@@ -9,7 +9,6 @@ import java.util.zip.*;
 public class VirtualFileSystem {
     private ZipFile zipFile;
     private String currentDir;
-    private File tempDir;
     private String name;
     private TreeNode tree;
 
@@ -20,7 +19,6 @@ public class VirtualFileSystem {
         name = parts[parts.length - 1].substring(0, parts[parts.length - 1].lastIndexOf('.'));
 
         this.currentDir = name + "/";
-        this.tempDir = Files.createTempDirectory("vfs").toFile();
 
         tree = new TreeNode(name, false);
         Enumeration<? extends ZipEntry> entries = zipFile.entries();
@@ -56,7 +54,7 @@ public class VirtualFileSystem {
             String temp = name + "/";
 
             if(parts.length == 2){
-                currentDir =temp;
+                currentDir = temp;
                 return;
             }
 

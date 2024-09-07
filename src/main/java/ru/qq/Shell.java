@@ -58,7 +58,7 @@ public class Shell {
         switch (command) {
             case "exit":
                 System.out.println("Exiting shell...");
-                break;
+                System.exit(1);
             case "ls":
                 vfs.ls().forEach(System.out::println);
                 break;
