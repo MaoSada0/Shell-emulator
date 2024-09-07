@@ -19,7 +19,7 @@ public class Shell {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
-            System.out.print(username + "@" + hostname + ":" + vfs.getCurrentDir() + "$ ");
+            System.out.print(username + "@" + hostname + ":~$ ");
             String input = scanner.nextLine();
             String[] parts = input.trim().split("\\s+");
             String command = parts[0];
@@ -39,6 +39,9 @@ public class Shell {
                     } else {
                         System.out.println("cd: missing argument");
                     }
+                    break;
+                case "pwd":
+                    System.out.println(vfs.getCurrentDir());
                     break;
                 default:
                     System.out.println(command + ": command not found");

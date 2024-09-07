@@ -28,8 +28,6 @@ public class VirtualFileSystem {
             ZipEntry entry = entries.nextElement();
             String entryName = entry.getName();
 
-            System.out.println(entryName);
-
             tree.insert(entryName.split("/"), !entry.isDirectory());
         }
     }
@@ -50,9 +48,8 @@ public class VirtualFileSystem {
 
     public void cd(String newDir) {
         if(newDir.equals(".")) return;
-        if(newDir.equals("/")) currentDir = name + "/";
-
-        if(newDir.equals("..")){
+        else if(newDir.equals("/")) currentDir = name + "/";
+        else if(newDir.equals("..")){
             String[] parts = currentDir.split("/");
 
             String temp = name + "/";
@@ -70,6 +67,8 @@ public class VirtualFileSystem {
 
             currentDir = temp;
         }
+        else if(tree.containsPath((currentDir + newDir).split("/"))) currentDir = currentDir + newDir + "/";
+        else System.out.println(" No such file or directory");
     }
 
     public String getCurrentDir() {

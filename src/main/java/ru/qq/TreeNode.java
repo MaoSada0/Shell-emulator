@@ -53,6 +53,25 @@ public class TreeNode {
         return new ArrayList<>();
     }
 
+    public boolean containsPath(String[] parts) {
+        if (parts.length == 0) {
+            return false;
+        }
+
+        if (parts.length == 1) {
+            return this.part.equals(parts[0]);
+        }
+
+        for (TreeNode child : children) {
+            if (child.getPart().equals(parts[1])) {
+                return child.containsPath(Arrays.copyOfRange(parts, 1, parts.length));
+            }
+        }
+
+        return false;
+    }
+
+
     public boolean isFile() {
         return isFile;
     }
