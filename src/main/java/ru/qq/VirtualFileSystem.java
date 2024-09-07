@@ -32,6 +32,18 @@ public class VirtualFileSystem {
         return new ArrayList<>(files);
     }
 
+    public void cd(String newDir) {
+        if (newDir.equals("/")) {
+            currentDir = "/";
+        } else {
+            String potentialDir = currentDir + newDir;
+            if (!potentialDir.endsWith("/")) {
+                potentialDir += "/";
+            }
+            currentDir = potentialDir;
+        }
+    }
+
     public String getCurrentDir() {
         return currentDir;
     }
