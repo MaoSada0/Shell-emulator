@@ -29,7 +29,10 @@ public class Shell {
             switch (command) {
                 case "exit":
                     System.out.println("Exiting shell...");
-                    return;
+                    break;
+                case "ls":
+                    vfs.ls().forEach(System.out::println);
+                    break;
                 default:
                     System.out.println(command + ": command not found");
             }

@@ -4,12 +4,12 @@ import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
-        if (args.length != 1) {
-            System.out.println("Not correct args");
-            System.exit(1);
-        }
+//        if (args.length != 1) {
+//            System.out.println("Not correct args");
+//            System.exit(1);
+//        }
 
-        String configPath = args[0];
+        String configPath = "C:\\Users\\user\\IdeaProjects\\config_task1\\src\\main\\resources\\application.yaml"; // args[0]
         Configuration configuration = new Configuration(configPath);
 
         String username = configuration.getUsername();
