@@ -16,8 +16,11 @@ public class VirtualFileSystem {
     private String currentDir;
     private String name;
     private TreeNode tree;
+    private long startTime;
 
     public VirtualFileSystem(String zipPath) throws IOException {
+        this.startTime = System.currentTimeMillis();
+
         this.zipFile = new ZipFile(zipPath);
 
         String[] parts = zipFile.getName().split("\\\\");
@@ -131,7 +134,6 @@ public class VirtualFileSystem {
         }
 
         tree.insert(fileNewDirectory.split("/"), true);
-        System.out.println("fnd: " + fileNewDirectory);
 
         ZipUnpacker.unpackZip(Configuration.getZipPathStatic(), Configuration.getZipDirectoryPath());
 
@@ -166,18 +168,30 @@ public class VirtualFileSystem {
         Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                Files.delete(file);  // Удаляем файл
+                Files.delete(file);
                 return FileVisitResult.CONTINUE;
             }
 
             @Override
             public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                Files.delete(dir);  // Удаляем директорию после удаления всех её файлов
+                Files.delete(dir);
                 return FileVisitResult.CONTINUE;
             }
         });
     }
 
+    public String uptime(){
+        long uptimeMillis = System.currentTimeMillis() - startTime;
+        long uptimeSeconds = uptimeMillis / 1000;
+        long hours = uptimeSeconds / 3600;
+        long minutes = (uptimeSeconds % 3600) / 60;
+        long seconds = uptimeSeconds % 60;
+        return String.format("Uptime: %02d:%02d:%02d", hours, minutes, seconds);
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
 
     public String getCurrentDir() {
         return currentDir;

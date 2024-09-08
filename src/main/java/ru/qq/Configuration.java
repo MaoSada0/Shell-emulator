@@ -31,6 +31,8 @@ public class Configuration {
     }
 
     public static String getZipPathStatic() {
+        if(ZIPPATH == null) return "C:\\вуз\\конфигурационное управление\\test\\course.zip";
+
         return ZIPPATH;
     }
 
@@ -43,11 +45,12 @@ public class Configuration {
     }
 
     public String getZipPath() {
+        if(ZIPPATH == null) return "C:\\вуз\\конфигурационное управление\\test\\course.zip";
         return ZIPPATH;
     }
 
     public static String getZipDirectoryPath() {
-        if(ZIPPATH.isEmpty()) return "";
+        if(ZIPPATH == null) return "C:\\вуз\\конфигурационное управление\\test";
 
         String[] parts = ZIPPATH.split("\\\\");
         StringBuilder der = new StringBuilder();
@@ -62,6 +65,7 @@ public class Configuration {
     }
 
     public static String getZipDirectoryPathInside() {
+        if(ZIPPATH == null) return "C:\\вуз\\конфигурационное управление\\test\\course";
         return ZIPPATH.substring(0, ZIPPATH.lastIndexOf("."));
     }
 }
