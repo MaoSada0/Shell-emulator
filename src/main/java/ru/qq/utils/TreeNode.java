@@ -1,4 +1,4 @@
-package ru.qq;
+package ru.qq.utils;
 
 import java.util.*;
 
@@ -12,6 +12,14 @@ public class TreeNode {
         this.part = part;
         this.isFile = isFile;
         children = new ArrayList<>();
+    }
+
+
+    @Override
+    public String toString() {
+        return "TreeNode{" +
+                "part='" + part + '\'' +
+                '}';
     }
 
     public void insert(String[] parts, boolean isFile) {

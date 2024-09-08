@@ -1,7 +1,12 @@
 package ru.qq;
+import ru.qq.utils.FolderToZip;
+import ru.qq.utils.TreeNode;
+import ru.qq.utils.ZipUnpacker;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.zip.*;
 
@@ -16,19 +21,19 @@ public class VirtualFileSystem {
         this.zipFile = new ZipFile(zipPath);
 
         String[] parts = zipFile.getName().split("\\\\");
+
         name = parts[parts.length - 1].substring(0, parts[parts.length - 1].lastIndexOf('.'));
 
         this.currentDir = name + "/";
 
         tree = new TreeNode(name, false);
         Enumeration<? extends ZipEntry> entries = zipFile.entries();
-
         while (entries.hasMoreElements()) {
             ZipEntry entry = entries.nextElement();
             String entryName = entry.getName();
-
             tree.insert(entryName.split("/"), !entry.isDirectory());
         }
+
     }
 
     public List<String> ls() {
@@ -51,23 +56,23 @@ public class VirtualFileSystem {
         else if(newDir.equals("..")){
             String[] parts = currentDir.split("/");
 
-            String temp = name + "/";
-
             if(parts.length == 2){
-                currentDir = temp;
+                currentDir = name + "/";
                 return;
             }
 
+            String temp = "";
             for (int i = 0; i < parts.length - 1; i++) {
                 temp = temp + parts[i];
 
                 if(i != parts.length - 2) temp += "/";
             }
 
+
             currentDir = temp;
         }
         else if(tree.containsPath((currentDir + newDir).split("/"))) currentDir = currentDir + newDir + "/";
-        else System.out.println(" No such file or directory");
+        else System.out.println("No such file or directory");
     }
 
     public void readFile(String fileName) throws IOException {
@@ -87,6 +92,92 @@ public class VirtualFileSystem {
             }
         }
     }
+
+    public void cp(String filename, String directory) throws IOException {
+        String currentDirFormatted = currentDir.replace("/", "\\");
+        String directoryFormatted = directory.replace("/", "\\");
+
+        String fileNewDirectory;
+
+        if(directory.equals("/")){
+            fileNewDirectory = currentDir + filename;
+
+            directory = Configuration.getZipDirectoryPathInside() + "\\" + currentDirFormatted;
+
+        }
+        else if(directory.startsWith("./")) {
+            fileNewDirectory = name + "/" + directory + "/" + filename;
+
+            directory = Configuration.getZipDirectoryPathInside() + "\\" +
+                    directoryFormatted.substring(2);
+
+        } else {
+            fileNewDirectory = currentDir + directory + "/" +filename;
+
+            directory = Configuration.getZipDirectoryPath() + "\\" + currentDirFormatted +
+                    directoryFormatted;
+        }
+
+
+        if(filename.startsWith("./")) {
+            filename = Configuration.getZipDirectoryPathInside()+ "\\" + filename.substring(2).replace("/", "\\");
+        }else {
+            if(filename.charAt(0) == '/'){
+                StringBuilder temp = new StringBuilder(filename).deleteCharAt(0);
+                filename = Configuration.getZipDirectoryPath() + "\\" + currentDirFormatted + (temp.toString()).replace("/", "\\");
+            } else {
+                filename = Configuration.getZipDirectoryPath() + "\\" + currentDirFormatted + filename.replace("/", "\\");
+            }
+        }
+
+        tree.insert(fileNewDirectory.split("/"), true);
+        System.out.println("fnd: " + fileNewDirectory);
+
+        ZipUnpacker.unpackZip(Configuration.getZipPathStatic(), Configuration.getZipDirectoryPath());
+
+        Path sourcePath = Paths.get(filename);
+        Path targetDir = Paths.get(directory);
+
+        if (!Files.exists(sourcePath)) {
+            System.out.println("No such file!");
+            return;
+        }
+
+        if (!Files.exists(targetDir)) {
+            Files.createDirectories(targetDir);
+        }
+
+        Path targetPath = targetDir.resolve(sourcePath.getFileName());
+
+        Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+
+        zipFile.close();
+        Files.delete(Paths.get(Configuration.getZipPathStatic()));
+
+        FolderToZip.zipDirectory(Paths.get(Configuration.getZipDirectoryPathInside()),
+                Paths.get(Configuration.getZipDirectoryPathInside() + ".zip"));
+
+        zipFile = new ZipFile(Configuration.getZipPathStatic());
+        deleteDirectory(Paths.get(Configuration.getZipDirectoryPathInside()));
+
+    }
+
+    private static void deleteDirectory(Path directory) throws IOException {
+        Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Files.delete(file);  // Удаляем файл
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                Files.delete(dir);  // Удаляем директорию после удаления всех её файлов
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+
 
     public String getCurrentDir() {
         return currentDir;

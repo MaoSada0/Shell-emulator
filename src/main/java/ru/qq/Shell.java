@@ -10,12 +10,14 @@ public class Shell {
     private static VirtualFileSystem vfs;
     private String username;
     private String hostname;
+    private static long startTime;
 
 
     public Shell(VirtualFileSystem vfs, String username, String hostname) {
         this.vfs = vfs;
         this.username = username;
         this.hostname = hostname;
+        this.startTime = System.currentTimeMillis();
     }
 
     public void start() throws IOException {
@@ -86,11 +88,24 @@ public class Shell {
                     System.out.println("--script: missing argument");
                 }
                 break;
+            case "uptime":
+                long uptimeMillis = System.currentTimeMillis() - startTime;
+                long uptimeSeconds = uptimeMillis / 1000;
+                long hours = uptimeSeconds / 3600;
+                long minutes = (uptimeSeconds % 3600) / 60;
+                long seconds = uptimeSeconds % 60;
+                System.out.printf("Uptime: %02d:%02d:%02d\n", hours, minutes, seconds);
+                break;
+            case "cp":
+                if (args.length == 2) {
+                    vfs.cp(args[0], args[1]);
+                } else {
+                    System.out.println("cp: missing source or destination");
+                }
+                break;
             default:
                 System.out.println(command + ": command not found");
                 break;
         }
-
-
     }
 }

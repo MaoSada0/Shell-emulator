@@ -1,16 +1,20 @@
 package ru.qq;
+import ru.qq.utils.ZipUnpacker;
+
 import java.io.IOException;
 import java.util.Map;
 
 public class Main {
-    public static void main(String[] args) {
-        if (args.length != 1) {
-            System.out.println("Not correct args");
-            System.exit(1);
-        }
+    public static void main(String[] args) throws IOException {
+//        if (args.length != 1) {
+//            System.out.println("Not correct args");
+//            System.exit(1);
+//        }
 
-        String configPath = args[0];
-        Configuration configuration = new Configuration(configPath);
+        //String configPath = args[0];
+        Configuration configuration = new Configuration("C:\\Users\\user\\IdeaProjects\\config_task1\\src\\main\\resources\\application.yaml");
+
+        //ZipUnpacker.unpackZip(configuration.getZipPath(), Configuration.getZipDirectoryPath());
 
         String username = configuration.getUsername();
         String hostname = configuration.getHostname();

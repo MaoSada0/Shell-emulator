@@ -2,6 +2,7 @@ package ru.qq;
 
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Map;
@@ -29,6 +30,10 @@ public class Configuration {
         ZIPPATH = values.get("zip-path");
     }
 
+    public static String getZipPathStatic() {
+        return ZIPPATH;
+    }
+
     public String getUsername() {
         return USERNAME;
     }
@@ -39,5 +44,24 @@ public class Configuration {
 
     public String getZipPath() {
         return ZIPPATH;
+    }
+
+    public static String getZipDirectoryPath() {
+        if(ZIPPATH.isEmpty()) return "";
+
+        String[] parts = ZIPPATH.split("\\\\");
+        StringBuilder der = new StringBuilder();
+        for (int i = 0; i < parts.length - 1; i++) {
+            der.append(parts[i]);
+            if(i != parts.length - 2) der.append(File.separator);
+        }
+
+
+
+        return der.toString();
+    }
+
+    public static String getZipDirectoryPathInside() {
+        return ZIPPATH.substring(0, ZIPPATH.lastIndexOf("."));
     }
 }
