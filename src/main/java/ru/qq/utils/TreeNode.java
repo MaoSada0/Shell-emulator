@@ -75,6 +75,28 @@ public class TreeNode {
     }
 
 
+    public boolean isFile(String[] parts) {
+        if(!this.containsPath(parts)) return false;
+
+
+
+        if (parts.length == 0) {
+            return false;
+        }
+
+        if (parts.length == 1) {
+            return isFile;
+        }
+
+        for (TreeNode child : children) {
+            if (child.getPart().equals(parts[1])) {
+                return child.isFile(Arrays.copyOfRange(parts, 1, parts.length));
+            }
+        }
+
+        return false;
+    }
+
     public boolean isFile() {
         return isFile;
     }

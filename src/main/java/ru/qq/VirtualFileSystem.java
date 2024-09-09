@@ -29,13 +29,7 @@ public class VirtualFileSystem {
 
         this.currentDir = name + "/";
 
-        tree = new TreeNode(name, false);
-        Enumeration<? extends ZipEntry> entries = zipFile.entries();
-        while (entries.hasMoreElements()) {
-            ZipEntry entry = entries.nextElement();
-            String entryName = entry.getName();
-            tree.insert(entryName.split("/"), !entry.isDirectory());
-        }
+        updateTree();
 
     }
 
@@ -54,8 +48,17 @@ public class VirtualFileSystem {
     }
 
     public void cd(String newDir) {
+        if(tree.containsPath((currentDir + newDir).split("/")) && tree.isFile((currentDir + newDir).split("/"))) {
+            System.out.println("No such directory");
+            return;
+        }
+
+
         if(newDir.equals(".")) return;
         else if(newDir.equals("/")) currentDir = name + "/";
+        else if(newDir.equals("..") && currentDir.equals(name + "/")){
+            currentDir = name + "/";
+        }
         else if(newDir.equals("..")){
             String[] parts = currentDir.split("/");
 
@@ -74,8 +77,9 @@ public class VirtualFileSystem {
 
             currentDir = temp;
         }
+        else if(newDir.length() - newDir.replace("/", "").length() > 1)System.out.println("No such file or directory");
         else if(tree.containsPath((currentDir + newDir).split("/"))) currentDir = currentDir + newDir + "/";
-        else System.out.println("No such file or directory");
+        else System.out.println("No such directory");
     }
 
     public void readFile(String fileName) throws IOException {
@@ -96,9 +100,20 @@ public class VirtualFileSystem {
         }
     }
 
+    private void updateTree(){
+        tree = new TreeNode(name, false);
+        Enumeration<? extends ZipEntry> entries = zipFile.entries();
+        while (entries.hasMoreElements()) {
+            ZipEntry entry = entries.nextElement();
+            String entryName = entry.getName();
+            tree.insert(entryName.split("/"), !entry.isDirectory());
+        }
+    }
+
     public void cp(String filename, String directory) throws IOException {
         String currentDirFormatted = currentDir.replace("/", "\\");
         String directoryFormatted = directory.replace("/", "\\");
+
 
         String fileNewDirectory;
 
@@ -133,7 +148,7 @@ public class VirtualFileSystem {
             }
         }
 
-        tree.insert(fileNewDirectory.split("/"), true);
+
 
         ZipUnpacker.unpackZip(Configuration.getZipPathStatic(), Configuration.getZipDirectoryPath());
 
@@ -151,7 +166,30 @@ public class VirtualFileSystem {
 
         Path targetPath = targetDir.resolve(sourcePath.getFileName());
 
-        Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+        boolean flag = false;
+        if(Files.isDirectory(sourcePath)){
+            Files.walkFileTree(sourcePath, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult preVisitDirectory(final Path dir,
+                                                         final BasicFileAttributes attrs) throws IOException {
+                    Files.createDirectories(targetPath.resolve(sourcePath
+                            .relativize(dir)));
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFile(final Path file,
+                                                 final BasicFileAttributes attrs) throws IOException {
+                    Files.copy(file,
+                            targetPath.resolve(sourcePath.relativize(file)));
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+            flag = true;
+        } else{
+            tree.insert(fileNewDirectory.split("/"), true);
+            Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+        }
 
         zipFile.close();
         Files.delete(Paths.get(Configuration.getZipPathStatic()));
@@ -162,6 +200,7 @@ public class VirtualFileSystem {
         zipFile = new ZipFile(Configuration.getZipPathStatic());
         deleteDirectory(Paths.get(Configuration.getZipDirectoryPathInside()));
 
+        if(flag) updateTree();
     }
 
     private static void deleteDirectory(Path directory) throws IOException {
