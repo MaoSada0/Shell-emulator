@@ -31,7 +31,7 @@ public class Configuration {
     }
 
     public static String getZipPathStatic() {
-        if(ZIPPATH == null) return "C:\\вуз\\конфигурационное управление\\test\\course.zip";
+        if(ZIPPATH == null) return "C:\\вуз\\конфигурационное управление\\test\\course.zip"; // for test
 
         return ZIPPATH;
     }

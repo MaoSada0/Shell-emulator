@@ -79,7 +79,6 @@ public class TreeNode {
         if(!this.containsPath(parts)) return false;
 
 
-
         if (parts.length == 0) {
             return false;
         }

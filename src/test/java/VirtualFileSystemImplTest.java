@@ -1,20 +1,20 @@
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.qq.VirtualFileSystem;
+import ru.qq.VirtualFileSystemImpl;
 
 import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class VirtualFileSystemTest {
+public class VirtualFileSystemImplTest {
 
-    private VirtualFileSystem vfs;
+    private VirtualFileSystemImpl vfs;
 
     @BeforeEach
     public void setUp() throws IOException {
         String zipPath = "C:\\вуз\\конфигурационное управление\\test\\course.zip";
-        vfs = new VirtualFileSystem(zipPath);
+        vfs = new VirtualFileSystemImpl(zipPath);
     }
 
     @Test
@@ -33,7 +33,7 @@ public class VirtualFileSystemTest {
         vfs.cd("out");
         vfs.cd("production");
 
-        String pwd = vfs.getCurrentDir();
+        String pwd = vfs.pwd();
 
         assertEquals("course/out/production/", pwd);
     }

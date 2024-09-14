@@ -42,7 +42,7 @@ public class ZipUnpacker {
     }
 
 
-    public static File newFile(File destDir, ZipEntry zipEntry) throws IOException {
+    private static File newFile(File destDir, ZipEntry zipEntry) throws IOException {
         File destFile = new File(destDir, zipEntry.getName());
 
         String destDirPath = destDir.getCanonicalPath();

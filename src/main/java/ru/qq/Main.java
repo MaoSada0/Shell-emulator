@@ -1,8 +1,6 @@
 package ru.qq;
-import ru.qq.utils.ZipUnpacker;
 
 import java.io.IOException;
-import java.util.Map;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -26,7 +24,7 @@ public class Main {
         }
 
         try {
-            VirtualFileSystem vfs = new VirtualFileSystem(zipPath);
+            VirtualFileSystemImpl vfs = new VirtualFileSystemImpl(zipPath);
             Shell shell = new Shell(vfs, username, hostname);
             shell.start();
         } catch (IOException e) {

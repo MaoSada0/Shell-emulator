@@ -2,23 +2,25 @@ package ru.qq;
 import ru.qq.utils.FolderToZip;
 import ru.qq.utils.TreeNode;
 import ru.qq.utils.ZipUnpacker;
+import ru.qq.utils.interfaces.VirtualFileSystem;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.stream.IntStream;
 import java.util.zip.*;
 
 
-public class VirtualFileSystem {
+public class VirtualFileSystemImpl implements VirtualFileSystem {
     private ZipFile zipFile;
     private String currentDir;
     private String name;
     private TreeNode tree;
     private long startTime;
 
-    public VirtualFileSystem(String zipPath) throws IOException {
+    public VirtualFileSystemImpl(String zipPath) throws IOException {
         this.startTime = System.currentTimeMillis();
 
         this.zipFile = new ZipFile(zipPath);
@@ -33,6 +35,7 @@ public class VirtualFileSystem {
 
     }
 
+    @Override
     public List<String> ls() {
         List<TreeNode> files = tree.getChildrenByNode(currentDir.split("/"));
 
@@ -47,42 +50,40 @@ public class VirtualFileSystem {
 
     }
 
+    @Override
     public void cd(String newDir) {
-        if(tree.containsPath((currentDir + newDir).split("/")) && tree.isFile((currentDir + newDir).split("/"))) {
-            System.out.println("No such directory");
+        String fullPath = currentDir + newDir;
+        String[] pathParts = fullPath.split("/");
+
+        if (IntStream.range(0, newDir.length() - 1)
+                .anyMatch(i -> newDir.charAt(i) == '/' && newDir.charAt(i + 1) == '/')) {
+            System.out.println("No such file or directory");
             return;
         }
 
 
         if(newDir.equals(".")) return;
         else if(newDir.equals("/")) currentDir = name + "/";
-        else if(newDir.equals("..") && currentDir.equals(name + "/")){
-            currentDir = name + "/";
-        }
         else if(newDir.equals("..")){
             String[] parts = currentDir.split("/");
 
-            if(parts.length == 2){
+            if(parts.length <= 2) {
                 currentDir = name + "/";
                 return;
             }
 
-            String temp = "";
-            for (int i = 0; i < parts.length - 1; i++) {
-                temp = temp + parts[i];
-
-                if(i != parts.length - 2) temp += "/";
-            }
-
-
-            currentDir = temp;
+            currentDir = String.join("/", Arrays.copyOf(parts, parts.length - 1)) + "/";
         }
-        else if(newDir.length() - newDir.replace("/", "").length() > 1)System.out.println("No such file or directory");
-        else if(tree.containsPath((currentDir + newDir).split("/"))) currentDir = currentDir + newDir + "/";
+        else if(!tree.containsPath(pathParts)  || tree.isFile(pathParts)) {
+            System.out.println("No such directory");
+        }
+        else if(tree.containsPath(pathParts))
+            currentDir = currentDir + newDir + "/";
         else System.out.println("No such directory");
     }
 
-    public void readFile(String fileName) throws IOException {
+    @Override
+    public void cat(String fileName) throws IOException {
         String fullPath = currentDir + fileName;
         ZipEntry entry = zipFile.getEntry(fullPath);
 
@@ -100,38 +101,19 @@ public class VirtualFileSystem {
         }
     }
 
-    private void updateTree(){
-        tree = new TreeNode(name, false);
-        Enumeration<? extends ZipEntry> entries = zipFile.entries();
-        while (entries.hasMoreElements()) {
-            ZipEntry entry = entries.nextElement();
-            String entryName = entry.getName();
-            tree.insert(entryName.split("/"), !entry.isDirectory());
-        }
-    }
-
+    @Override
     public void cp(String filename, String directory) throws IOException {
         String currentDirFormatted = currentDir.replace("/", "\\");
         String directoryFormatted = directory.replace("/", "\\");
 
-
-        String fileNewDirectory;
-
         if(directory.equals("/")){
-            fileNewDirectory = currentDir + filename;
-
             directory = Configuration.getZipDirectoryPathInside() + "\\" + currentDirFormatted;
-
         }
         else if(directory.startsWith("./")) {
-            fileNewDirectory = name + "/" + directory + "/" + filename;
-
             directory = Configuration.getZipDirectoryPathInside() + "\\" +
                     directoryFormatted.substring(2);
 
         } else {
-            fileNewDirectory = currentDir + directory + "/" +filename;
-
             directory = Configuration.getZipDirectoryPath() + "\\" + currentDirFormatted +
                     directoryFormatted;
         }
@@ -147,7 +129,6 @@ public class VirtualFileSystem {
                 filename = Configuration.getZipDirectoryPath() + "\\" + currentDirFormatted + filename.replace("/", "\\");
             }
         }
-
 
 
         ZipUnpacker.unpackZip(Configuration.getZipPathStatic(), Configuration.getZipDirectoryPath());
@@ -166,28 +147,9 @@ public class VirtualFileSystem {
 
         Path targetPath = targetDir.resolve(sourcePath.getFileName());
 
-        boolean flag = false;
         if(Files.isDirectory(sourcePath)){
-            Files.walkFileTree(sourcePath, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult preVisitDirectory(final Path dir,
-                                                         final BasicFileAttributes attrs) throws IOException {
-                    Files.createDirectories(targetPath.resolve(sourcePath
-                            .relativize(dir)));
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult visitFile(final Path file,
-                                                 final BasicFileAttributes attrs) throws IOException {
-                    Files.copy(file,
-                            targetPath.resolve(sourcePath.relativize(file)));
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-            flag = true;
+            helper(sourcePath, targetPath);
         } else{
-            tree.insert(fileNewDirectory.split("/"), true);
             Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
         }
 
@@ -200,8 +162,29 @@ public class VirtualFileSystem {
         zipFile = new ZipFile(Configuration.getZipPathStatic());
         deleteDirectory(Paths.get(Configuration.getZipDirectoryPathInside()));
 
-        if(flag) updateTree();
+        updateTree();
     }
+
+    private static void helper(Path sourcePath, Path targetPath) throws IOException {
+        Files.walkFileTree(sourcePath, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult preVisitDirectory(final Path dir,
+                                                     final BasicFileAttributes attrs) throws IOException {
+                Files.createDirectories(targetPath.resolve(sourcePath
+                        .relativize(dir)));
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(final Path file,
+                                             final BasicFileAttributes attrs) throws IOException {
+                Files.copy(file,
+                        targetPath.resolve(sourcePath.relativize(file)));
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+
 
     private static void deleteDirectory(Path directory) throws IOException {
         Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
@@ -218,7 +201,7 @@ public class VirtualFileSystem {
             }
         });
     }
-
+    @Override
     public String uptime(){
         long uptimeMillis = System.currentTimeMillis() - startTime;
         long uptimeSeconds = uptimeMillis / 1000;
@@ -228,11 +211,23 @@ public class VirtualFileSystem {
         return String.format("Uptime: %02d:%02d:%02d", hours, minutes, seconds);
     }
 
+    private void updateTree(){
+        tree = new TreeNode(name, false);
+        Enumeration<? extends ZipEntry> entries = zipFile.entries();
+        while (entries.hasMoreElements()) {
+            ZipEntry entry = entries.nextElement();
+            String entryName = entry.getName();
+            tree.insert(entryName.split("/"), !entry.isDirectory());
+        }
+    }
+
     public void setStartTime(long startTime) {
         this.startTime = startTime;
     }
 
-    public String getCurrentDir() {
+
+    @Override
+    public String pwd() {
         return currentDir;
     }
 }

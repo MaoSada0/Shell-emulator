@@ -1,5 +1,7 @@
 package ru.qq;
 
+import ru.qq.utils.interfaces.VirtualFileSystem;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -70,11 +72,11 @@ public class Shell {
                 }
                 break;
             case "pwd":
-                System.out.println(vfs.getCurrentDir());
+                System.out.println(vfs.pwd());
                 break;
             case "cat":
                 if (args.length > 0) {
-                    vfs.readFile(args[0]);
+                    vfs.cat(args[0]);
                 } else {
                     System.out.println("cat: missing argument");
                 }
