@@ -1,6 +1,6 @@
 package ru.qq;
 
-import ru.qq.utils.interfaces.VirtualFileSystem;
+import ru.qq.interfaces.VirtualFileSystem;
 
 import java.io.BufferedReader;
 import java.io.File;

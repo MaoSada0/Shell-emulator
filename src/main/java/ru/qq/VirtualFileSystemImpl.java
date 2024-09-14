@@ -2,7 +2,7 @@ package ru.qq;
 import ru.qq.utils.FolderToZip;
 import ru.qq.utils.TreeNode;
 import ru.qq.utils.ZipUnpacker;
-import ru.qq.utils.interfaces.VirtualFileSystem;
+import ru.qq.interfaces.VirtualFileSystem;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;

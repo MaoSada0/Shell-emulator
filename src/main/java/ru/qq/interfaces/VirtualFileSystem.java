@@ -1,4 +1,4 @@
-package ru.qq.utils.interfaces;
+package ru.qq.interfaces;
 
 import java.io.IOException;
 import java.util.List;
