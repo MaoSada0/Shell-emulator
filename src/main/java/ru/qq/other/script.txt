@@ -1,0 +1,4 @@
+ls
+cd out
+ls
+pwd
