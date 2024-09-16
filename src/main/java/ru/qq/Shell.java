@@ -9,9 +9,9 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class Shell {
-    private static VirtualFileSystem vfs;
-    private String username;
-    private String hostname;
+    private final VirtualFileSystem vfs;
+    private final String username;
+    private final String hostname;
 
 
     public Shell(VirtualFileSystem vfs, String username, String hostname) {
@@ -26,11 +26,11 @@ public class Shell {
         while (true) {
             System.out.print(username + "@" + hostname + ":~$ ");
             String input = scanner.nextLine();
-            executeCommand(input);
+            executeCommand(input, vfs);
         }
     }
 
-    private static void executeScript(String scriptFilePath) {
+    private static void executeScript(String scriptFilePath, VirtualFileSystem vfs) {
         File scriptFile = new File(scriptFilePath);
         if (!scriptFile.exists()) {
             System.err.println("Script file not found: " + scriptFilePath);
@@ -39,7 +39,7 @@ public class Shell {
         try (BufferedReader br = new BufferedReader(new FileReader(scriptFile))) {
             String line = br.readLine();
             while (line != null) {
-                executeCommand(line.trim());
+                executeCommand(line.trim(), vfs);
                 line = br.readLine();
             }
         } catch (IOException e) {
@@ -47,7 +47,7 @@ public class Shell {
         }
     }
 
-    private static void executeCommand(String input) throws IOException {
+    private static void executeCommand(String input, VirtualFileSystem vfs) throws IOException {
         if (input.isEmpty()) {
             return;
         }
@@ -83,7 +83,7 @@ public class Shell {
                 break;
             case "--script":
                 if (args.length > 0) {
-                    executeScript(args[0]);
+                    executeScript(args[0], vfs);
                 } else {
                     System.out.println("--script: missing argument");
                 }

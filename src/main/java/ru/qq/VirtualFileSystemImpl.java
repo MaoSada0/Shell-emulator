@@ -16,7 +16,7 @@ import java.util.zip.*;
 public class VirtualFileSystemImpl implements VirtualFileSystem {
     private ZipFile zipFile;
     private String currentDir;
-    private String name;
+    private final String name;
     private TreeNode tree;
     private long startTime;
 
