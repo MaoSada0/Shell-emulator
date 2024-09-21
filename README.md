@@ -22,5 +22,9 @@ To use this:
 java -jar <path to jar file> <path to yaml file>
 ````
 
+yaml file contains:
 
+- username
+- hostname
+- path to zip (file system)
 
